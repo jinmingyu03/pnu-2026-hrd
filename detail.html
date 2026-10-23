@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>과정 상세 안내 | 2026 부산대학교 교직원 직무연수</title>
+  <!-- Pretendard & JetBrains Mono Fonts -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <!-- PapaParse for CSV Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    :root {
+      --pnu-navy: #003876;
+      --pnu-navy-dark: #002552;
+      --pnu-blue: #005BAC;
+      --pnu-blue-light: #EBF3FA;
+      --pnu-gold: #C59B27;
+      --bg-page: #F5F7FA;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #EEF2F6;
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --border-strong: #CBD5E1;
+
+      /* Semantic Badges */
+      --req-text: #DC2626;
+      --req-bg: #FEF2F2;
+      --req-border: #FECACA;
+
+      --req-cond-text: #D97706;
+      --req-cond-bg: #FFFBEB;
+      --req-cond-border: #FDE68A;
+
+      --rec-text: #005BAC;
+      --rec-bg: #EFF6FF;
+      --rec-border: #BFDBFE;
+
+      --opt-text: #475569;
+      --opt-bg: #F1F5F9;
+      --opt-border: #E2E8F0;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+      --shadow-md: 0 12px 28px -6px rgba(0, 56, 118, 0.1), 0 4px 12px -3px rgba(15, 23, 42, 0.05);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.65;
+      letter-spacing: -0.015em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      letter-spacing: -0.02em;
+    }
+
+    /* Top Utility Bar */
+    .top-utility-bar {
+      background-color: var(--pnu-navy-dark);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.8125rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .top-utility-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 8px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .inst-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+    }
+
+    .inst-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #38BDF8;
+      box-shadow: 0 0 8px #38BDF8;
+    }
+
+    .sync-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sync-status {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.78rem;
+    }
+
+    .btn-sync {
+      background: rgba(255, 255, 255, 0.12);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+
+    .btn-sync:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    /* Sub Navigation / Breadcrumb Bar */
+    .sub-navbar {
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+
+    .sub-navbar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--pnu-navy);
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      background: var(--pnu-blue-light);
+      border: 1px solid #BFDBFE;
+      transition: all 0.16s ease;
+    }
+
+    .back-link:hover {
+      background: var(--pnu-blue);
+      color: #FFFFFF;
+      border-color: var(--pnu-blue);
+    }
+
+    .breadcrumb-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .course-quick-select {
+      padding: 6px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: var(--text-secondary);
+      background: #FFFFFF;
+      max-width: 280px;
+    }
+
+    .nav-arrow-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 11px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: #FFFFFF;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .nav-arrow-btn:hover:not(.disabled) {
+      border-color: var(--pnu-blue);
+      color: var(--pnu-blue);
+      background: var(--bg-page);
+    }
+
+    .nav-arrow-btn.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Course Hero Banner */
+    .detail-hero {
+      background: linear-gradient(135deg, var(--pnu-navy) 0%, #004691 70%, var(--pnu-blue) 100%);
+      color: #FFFFFF;
+      padding: 44px 24px 52px;
+      border-bottom: 4px solid var(--pnu-gold);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .detail-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    .detail-hero-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .hero-badge-code {
+      background: rgba(15, 23, 42, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #FFFFFF;
+    }
+
+    .hero-badge-req {
+      background: #EF4444;
+      color: #FFFFFF;
+    }
+
+    .hero-badge-req-cond {
+      background: #F59E0B;
+      color: #FFFFFF;
+    }
+
+    .hero-badge-rec {
+      background: #38BDF8;
+      color: #0F172A;
+    }
+
+    .hero-badge-opt {
+      background: rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+    }
+
+    .hero-badge-cat {
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
+
+    .detail-title {
+      font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+      font-weight: 800;
+      line-height: 1.28;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+    }
+
+    .detail-lead {
+      font-size: clamp(1rem, 1.5vw, 1.15rem);
+      color: rgba(255, 255, 255, 0.9);
+      max-width: 860px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .hero-quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      max-width: 920px;
+    }
+
+    .quick-stat-box {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      backdrop-filter: blur(6px);
+    }
+
+    .quick-stat-label {
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.72);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .quick-stat-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    /* Main 2-Column Layout */
+    .detail-container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 36px 24px 80px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* Left Content Cards */
+    .content-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .content-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 2px solid var(--bg-subtle);
+    }
+
+    .section-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--pnu-blue-light);
+      color: var(--pnu-navy);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .description-body {
+      font-size: 1.02rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      white-space: pre-line;
+      background: var(--bg-page);
+      padding: 22px 24px;
+      border-radius: var(--radius-md);
+      border-left: 4px solid var(--pnu-blue);
+    }
+
+    /* Learning Goals List */
+    .goals-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      list-style: none;
+    }
+
+    .goal-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      transition: border-color 0.15s ease;
+    }
+
+    .goal-item:hover {
+      border-color: var(--pnu-blue);
+    }
+
+    .goal-check {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--pnu-navy);
+      color: #FFFFFF;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .goal-text {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Curriculum Modules Grid */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .module-card {
+      background: var(--bg-page);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.16s ease;
+    }
+
+    .module-card:hover {
+      background: #FFFFFF;
+      border-color: var(--pnu-blue);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .module-step {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--pnu-blue);
+      letter-spacing: 0.04em;
+    }
+
+    .module-name {
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Info Spec Table */
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .spec-table th,
+    .spec-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    .spec-table th {
+      width: 140px;
+      color: var(--text-muted);
+      font-weight: 600;
+      background: var(--bg-page);
+    }
+
+    .spec-table td {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* Right Sticky Sidebar */
+    .action-sidebar {
+      position: sticky;
+      top: 76px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sidebar-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .sidebar-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: #ECFDF5;
+      color: #047857;
+      border: 1px solid #A7F3D0;
+    }
+
+    .sidebar-spec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sidebar-spec-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.88rem;
+    }
+
+    .sidebar-spec-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .sidebar-spec-val {
+      color: var(--text-primary);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .btn-apply-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: var(--radius-sm);
+      background: var(--pnu-navy);
+      color: #FFFFFF;
+      font-size: 1rem;
+      font-weight: 800;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      box-shadow: 0 4px 12px rgba(0, 56, 118, 0.25);
+      margin-bottom: 10px;
+    }
+
+    .btn-apply-primary:hover {
+      background: var(--pnu-blue);
+      transform: translateY(-1px);
+    }
+
+    .sidebar-utility-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-utility {
+      padding: 10px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-utility:hover {
+      background: #E2E8F0;
+      color: var(--text-primary);
+    }
+
+    /* Contact Card */
+    .contact-card {
+      background: var(--pnu-blue-light);
+      border: 1px solid #BFDBFE;
+      border-radius: var(--radius-md);
+      padding: 20px;
+    }
+
+    .contact-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--pnu-navy);
+      margin-bottom: 6px;
+    }
+
+    .contact-value {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .contact-sub {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    /* Related Courses Section */
+    .related-section {
+      margin-top: 48px;
+      padding-top: 36px;
+      border-top: 1px solid var(--border-strong);
+    }
+
+    .related-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .related-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .related-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.18s ease;
+    }
+
+    .related-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--pnu-blue);
+      box-shadow: var(--shadow-md);
+    }
+
+    .related-card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 10px 0 8px;
+      color: var(--text-primary);
+    }
+
+    .related-card-summary {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 700;
+    }
+
+    .badge-req { background: var(--req-bg); color: var(--req-text); border: 1px solid var(--req-border); }
+    .badge-req-cond { background: var(--req-cond-bg); color: var(--req-cond-text); border: 1px solid var(--req-cond-border); }
+    .badge-rec { background: var(--rec-bg); color: var(--rec-text); border: 1px solid var(--rec-border); }
+    .badge-opt { background: var(--opt-bg); color: var(--opt-text); border: 1px solid var(--opt-border); }
+
+    /* Toast Message */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 12px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-md);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: all 0.22s ease;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    .site-footer {
+      background: #0F172A;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 40px 24px;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand strong {
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 960px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+      .action-sidebar {
+        position: static;
+      }
+      .hero-quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .related-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .modules-grid {
+        grid-template-columns: 1fr;
+      }
+      .content-card {
+        padding: 22px 18px;
+      }
+    }
+
+    @media print {
+      .top-utility-bar,
+      .sub-navbar,
+      .related-section,
+      .sidebar-utility-btns {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Utility Bar -->
+  <div class="top-utility-bar">
+    <div class="top-utility-inner">
+      <a href="index.html" class="inst-tag">
+        <span class="inst-dot"></span>
+        <span>PUSAN NATIONAL UNIVERSITY · 2026 교직원 직무연수 통합 플랫폼</span>
+      </a>
+      <div class="sync-controls">
+        <span id="syncStatusText" class="sync-status mono">구글 시트 실시간 연동 대기 중...</span>
+        <button type="button" id="btnRefreshData" class="btn-sync">
+          <span>↻</span> 실시간 시트 새로고침
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub Navbar / Back & Course Switcher -->
+  <nav class="sub-navbar" aria-label="과정 상세 네비게이션">
+    <div class="sub-navbar-inner">
+      <a href="index.html" class="back-link">
+        <span>←</span> 전체 연수 목록으로 돌아가기
+      </a>
+
+      <div class="breadcrumb-right">
+        <a href="#" id="prevCourseBtn" class="nav-arrow-btn disabled">‹ 이전 과정</a>
+        <select id="courseQuickSelect" class="course-quick-select" aria-label="다른 연수 과정 바로 이동">
+          <option value="">과정 선택 이동...</option>
+        </select>
+        <a href="#" id="nextCourseBtn" class="nav-arrow-btn disabled">다음 과정 ›</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Dynamic Content Container -->
+  <div id="detailRoot">
+    <section class="detail-hero">
+      <div class="detail-hero-inner">
+        <div class="hero-badges">
+          <span class="hero-badge hero-badge-code mono">LOADING...</span>
+        </div>
+        <h1 class="detail-title">구글 시트에서 과정 상세 정보를 불러오는 중입니다...</h1>
+        <p class="detail-lead">잠시만 기다려 주세요.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastMsg" class="toast" role="status" aria-live="polite">링크가 클립보드에 복사되었습니다.</div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <strong>부산대학교 총무과 · 인재개발원 (Pusan National University HRD)</strong>
+        <span>(46241) 부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 | 데이터 원본: Google Sheets 실시간 연동</span>
+      </div>
+      <div class="mono" style="font-size:0.78rem;opacity:0.75;">
+        PNU 2026 STAFF TRAINING CATALOG
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const SHEET_ID = "1StSwPAmtEg4EDuqQCTaKmV9N-A4bR8AS";
+    const GVIZ_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=data&headers=1`;
+
+    let allCourses = [];
+    const syncStatusText = document.getElementById("syncStatusText");
+    const btnRefreshData = document.getElementById("btnRefreshData");
+    const detailRoot = document.getElementById("detailRoot");
+    const courseQuickSelect = document.getElementById("courseQuickSelect");
+    const prevCourseBtn = document.getElementById("prevCourseBtn");
+    const nextCourseBtn = document.getElementById("nextCourseBtn");
+    const toastMsg = document.getElementById("toastMsg");
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getHeroReqBadgeClass(req) {
+      if (req === "필수") return "hero-badge-req";
+      if (req && req.includes("필수")) return "hero-badge-req-cond";
+      if (req === "권장") return "hero-badge-rec";
+      return "hero-badge-opt";
+    }
+
+    function getCardReqBadgeClass(req) {
+      if (req === "필수") return "badge-req";
+      if (req && req.includes("필수")) return "badge-req-cond";
+      if (req === "권장") return "badge-rec";
+      return "badge-opt";
+    }
+
+    function splitBulletItems(rawText) {
+      if (!rawText) return [];
+      return rawText
+        .split(/\s*[·•\n]\s*/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    function normalizeCourseRow(raw) {
+      const clean = {};
+      Object.keys(raw).forEach((k) => {
+        const trimmedKey = k.trim();
+        clean[trimmedKey] = typeof raw[k] === "string" ? raw[k].trim() : "";
+      });
+      return {
+        code: clean["과정코드"] || "",
+        title: clean["과정명"] || "",
+        category: clean["분야"] || "기타",
+        target: clean["대상"] || "-",
+        requirement: clean["이수구분"] || "-",
+        method: clean["교육방식"] || "-",
+        hours: clean["교육시간"] || "-",
+        capacity: clean["정원"] || "-",
+        period: clean["교육기간"] || "일정 추후 안내",
+        applyPeriod: clean["신청기간"] || "상시 또는 별도 안내",
+        dept: clean["담당부서"] || "-",
+        summary: clean["한줄소개"] || "",
+        description: clean["상세소개"] || "",
+        goals: clean["학습목표"] || "",
+        contents: clean["주요내용"] || "",
+        applyLink: clean["신청링크"] || "https://hrd.pusan.ac.kr",
+        contact: clean["문의"] || ""
+      };
+    }
+
+    // Fallback for file:// (Origin: null) so live Google Sheet always loads
+    function fetchCsvViaGvizJsonp() {
+      return new Promise((resolve, reject) => {
+        const cbName = "__pnuDetailGvizCb_" + Date.now();
+        const script = document.createElement("script");
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("구글 시트 응답 시간 초과"));
+        }, 10000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[cbName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[cbName] = function (resp) {
+          cleanup();
+          try {
+            if (!resp || !resp.table) throw new Error("시트 테이블 응답 형식 오류");
+            const cols = resp.table.cols.map((c) => c.label || "");
+            const rows = resp.table.rows.map((r) =>
+              (r.c || []).map((cell) => (cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : ""))
+            );
+            const csvString = Papa.unparse({ fields: cols, data: rows });
+            resolve(csvString);
+          } catch (e) {
+            reject(e);
+          }
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("구글 시트 스크립트 로드 실패"));
+        };
+
+        script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cbName}&sheet=data&headers=1&_ts=${Date.now()}`;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function loadDetailData() {
+      syncStatusText.textContent = "구글 시트 데이터 동기화 중...";
+      btnRefreshData.disabled = true;
+
+      try {
+        let csvText = "";
+        const fetchUrl = `${GVIZ_CSV_URL}&_ts=${Date.now()}`;
+
+        try {
+          const response = await fetch(fetchUrl, { cache: "no-store" });
+          if (!response.ok) throw new Error(`HTTP 오류 (${response.status})`);
+          csvText = await response.text();
+        } catch (fetchErr) {
+          csvText = await fetchCsvViaGvizJsonp();
+        }
+
+        const parsed = Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true
+        });
+
+        allCourses = (parsed.data || [])
+          .map(normalizeCourseRow)
+          .filter((c) => c.code && c.title);
+
+        if (allCourses.length === 0) {
+          throw new Error("연수 과정 데이터를 찾을 수 없습니다.");
+        }
+
+        const now = new Date();
+        syncStatusText.textContent = `● 실시간 시트 연동 완료 (${now.toTimeString().split(" ")[0]})`;
+
+        renderCurrentCourse();
+      } catch (err) {
+        console.error(err);
+        syncStatusText.textContent = "⚠ 시트 연동 오류";
+        detailRoot.innerHTML = `
+          <div class="detail-container">
+            <div class="content-card" style="text-align:center;padding:60px 24px;">
+              <h2 style="margin-bottom:10px;">구글 시트 데이터를 불러오지 못했습니다</h2>
+              <p style="color:var(--text-muted);margin-bottom:20px;">${escapeHtml(err.message)}</p>
+              <a href="index.html" class="back-link">← 메인 목록으로 돌아가기</a>
+            </div>
+          </div>
+        `;
+      } finally {
+        btnRefreshData.disabled = false;
+      }
+    }
+
+    function renderCurrentCourse() {
+      const params = new URLSearchParams(window.location.search);
+      const requestedCode = params.get("code");
+
+      let currentIndex = allCourses.findIndex(
+        (c) => c.code.toLowerCase() === (requestedCode || "").toLowerCase()
+      );
+
+      // If opened without ?code=, default to first course so page is still testable directly
+      const isDefaultFallback = currentIndex === -1;
+      if (isDefaultFallback) {
+        currentIndex = 0;
+      }
+
+      const course = allCourses[currentIndex];
+      document.title = `${course.title} (${course.code}) | 2026 부산대학교 직무연수`;
+
+      // Populate Quick Switcher Dropdown
+      courseQuickSelect.innerHTML = allCourses
+        .map(
+          (c) =>
+            `<option value="${escapeHtml(c.code)}" ${c.code === course.code ? "selected" : ""}>[${escapeHtml(c.code)}] ${escapeHtml(c.title)}</option>`
+        )
+        .join("");
+
+      // Update Prev / Next Navigation
+      if (currentIndex > 0) {
+        const prev = allCourses[currentIndex - 1];
+        prevCourseBtn.href = `detail.html?code=${encodeURIComponent(prev.code)}`;
+        prevCourseBtn.classList.remove("disabled");
+        prevCourseBtn.title = prev.title;
+      } else {
+        prevCourseBtn.href = "#";
+        prevCourseBtn.classList.add("disabled");
+      }
+
+      if (currentIndex < allCourses.length - 1) {
+        const next = allCourses[currentIndex + 1];
+        nextCourseBtn.href = `detail.html?code=${encodeURIComponent(next.code)}`;
+        nextCourseBtn.classList.remove("disabled");
+        nextCourseBtn.title = next.title;
+      } else {
+        nextCourseBtn.href = "#";
+        nextCourseBtn.classList.add("disabled");
+      }
+
+      const goalItems = splitBulletItems(course.goals);
+      const contentItems = splitBulletItems(course.contents);
+
+      // Related courses in the same category (or same target if fewer than 3)
+      let related = allCourses.filter((c) => c.code !== course.code && c.category === course.category);
+      if (related.length < 3) {
+        const extra = allCourses.filter(
+          (c) => c.code !== course.code && c.category !== course.category && c.target === course.target
+        );
+        related = [...related, ...extra];
+      }
+      related = related.slice(0, 3);
+
+      // Extract phone number if present for tel: link
+      const phoneMatch = course.contact.match(/(\d{2,3}-\d{3,4}-\d{4})/);
+      const phoneHref = phoneMatch ? `tel:${phoneMatch[1]}` : null;
+
+      detailRoot.innerHTML = `
+        <!-- Course Hero -->
+        <header class="detail-hero">
+          <div class="detail-hero-inner">
+            <div class="hero-badges">
+              <span class="hero-badge hero-badge-code mono">${escapeHtml(course.code)}</span>
+              <span class="hero-badge ${getHeroReqBadgeClass(course.requirement)}">${escapeHtml(course.requirement)} 이수</span>
+              <span class="hero-badge hero-badge-cat">${escapeHtml(course.category)}</span>
+              <span class="hero-badge hero-badge-cat">교육방식: ${escapeHtml(course.method)}</span>
+            </div>
+
+            <h1 class="detail-title">${escapeHtml(course.title)}</h1>
+            <p class="detail-lead">${escapeHtml(course.summary)}</p>
+
+            <div class="hero-quick-stats">
+              <div class="quick-stat-box">
+                <div class="quick-stat-label">교육대상</div>
+                <div class="quick-stat-value">${escapeHtml(course.target)}</div>
+              </div>
+              <div class="quick-stat-box">
+                <div class="quick-stat-label">교육방식 · 시간</div>
+                <div class="quick-stat-value">${escapeHtml(course.method)} · ${escapeHtml(course.hours)}</div>
+              </div>
+              <div class="quick-stat-box">
+                <div class="quick-stat-label">모집정원</div>
+                <div class="quick-stat-value">${escapeHtml(course.capacity)}</div>
+              </div>
+              <div class="quick-stat-box">
+                <div class="quick-stat-label">주관부서</div>
+                <div class="quick-stat-value">${escapeHtml(course.dept)}</div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Main Detail Body -->
+        <main class="detail-container">
+          <div class="detail-grid">
+            <!-- Left Column -->
+            <div class="content-column">
+              <!-- 1. 과정 상세소개 -->
+              <section class="content-card">
+                <div class="section-header">
+                  <span class="section-icon">📖</span>
+                  <h2 class="section-title">과정 상세 소개</h2>
+                </div>
+                <div class="description-body">${escapeHtml(course.description || course.summary)}</div>
+              </section>
+
+              <!-- 2. 학습목표 -->
+              <section class="content-card">
+                <div class="section-header">
+                  <span class="section-icon">🎯</span>
+                  <h2 class="section-title">학습 목표</h2>
+                </div>
+                <ul class="goals-list">
+                  ${
+                    goalItems.length > 0
+                      ? goalItems
+                          .map(
+                            (g) => `
+                        <li class="goal-item">
+                          <span class="goal-check">✓</span>
+                          <span class="goal-text">${escapeHtml(g)}</span>
+                        </li>
+                      `
+                          )
+                          .join("")
+                      : `<li class="goal-item"><span class="goal-text">해당 과정의 세부 학습목표는 강의계획서를 참고해 주세요.</span></li>`
+                  }
+                </ul>
+              </section>
+
+              <!-- 3. 주요 교육내용 (커리큘럼) -->
+              <section class="content-card">
+                <div class="section-header">
+                  <span class="section-icon">🗂️</span>
+                  <h2 class="section-title">주요 교육 내용 (커리큘럼)</h2>
+                </div>
+                <div class="modules-grid">
+                  ${
+                    contentItems.length > 0
+                      ? contentItems
+                          .map(
+                            (item, idx) => `
+                        <div class="module-card">
+                          <span class="module-step mono">MODULE ${String(idx + 1).padStart(2, "0")}</span>
+                          <span class="module-name">${escapeHtml(item)}</span>
+                        </div>
+                      `
+                          )
+                          .join("")
+                      : `<div class="module-card"><span class="module-name">상세 교육 내용은 추후 공지됩니다.</span></div>`
+                  }
+                </div>
+              </section>
+
+              <!-- 4. 연수 운영 상세 정보 표 -->
+              <section class="content-card">
+                <div class="section-header">
+                  <span class="section-icon">📋</span>
+                  <h2 class="section-title">연수 운영 및 이수 안내</h2>
+                </div>
+                <table class="spec-table">
+                  <tbody>
+                    <tr>
+                      <th>과정코드</th>
+                      <td class="mono">${escapeHtml(course.code)}</td>
+                      <th>분야</th>
+                      <td>${escapeHtml(course.category)}</td>
+                    </tr>
+                    <tr>
+                      <th>이수구분</th>
+                      <td>${escapeHtml(course.requirement)}</td>
+                      <th>교육대상</th>
+                      <td>${escapeHtml(course.target)}</td>
+                    </tr>
+                    <tr>
+                      <th>교육방식</th>
+                      <td>${escapeHtml(course.method)}</td>
+                      <th>인정시간 / 정원</th>
+                      <td>${escapeHtml(course.hours)} / ${escapeHtml(course.capacity)}</td>
+                    </tr>
+                    <tr>
+                      <th>교육기간</th>
+                      <td class="mono">${escapeHtml(course.period)}</td>
+                      <th>신청기간</th>
+                      <td class="mono">${escapeHtml(course.applyPeriod)}</td>
+                    </tr>
+                    <tr>
+                      <th>담당부서</th>
+                      <td>${escapeHtml(course.dept)}</td>
+                      <th>문의처</th>
+                      <td>${escapeHtml(course.contact)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </section>
+            </div>
+
+            <!-- Right Sticky Sidebar -->
+            <aside class="action-sidebar">
+              <div class="sidebar-card">
+                <div class="sidebar-status-row">
+                  <span class="status-pill">● 2026년도 개설 과정</span>
+                  <span class="mono" style="font-size:0.78rem;color:var(--text-muted);font-weight:600;">${escapeHtml(course.code)}</span>
+                </div>
+
+                <div class="sidebar-spec-list">
+                  <div class="sidebar-spec-item">
+                    <span class="sidebar-spec-label">이수구분</span>
+                    <span class="sidebar-spec-val">${escapeHtml(course.requirement)}</span>
+                  </div>
+                  <div class="sidebar-spec-item">
+                    <span class="sidebar-spec-label">교육대상</span>
+                    <span class="sidebar-spec-val">${escapeHtml(course.target)}</span>
+                  </div>
+                  <div class="sidebar-spec-item">
+                    <span class="sidebar-spec-label">교육방식 / 시간</span>
+                    <span class="sidebar-spec-val">${escapeHtml(course.method)} (${escapeHtml(course.hours)})</span>
+                  </div>
+                  <div class="sidebar-spec-item">
+                    <span class="sidebar-spec-label">모집정원</span>
+                    <span class="sidebar-spec-val">${escapeHtml(course.capacity)}</span>
+                  </div>
+                  <div class="sidebar-spec-item">
+                    <span class="sidebar-spec-label">교육기간</span>
+                    <span class="sidebar-spec-val mono" style="font-size:0.82rem;">${escapeHtml(course.period)}</span>
+                  </div>
+                  <div class="sidebar-spec-item">
+                    <span class="sidebar-spec-label">신청기간</span>
+                    <span class="sidebar-spec-val mono" style="font-size:0.82rem;color:var(--pnu-blue);">${escapeHtml(course.applyPeriod)}</span>
+                  </div>
+                </div>
+
+                <a
+                  href="${escapeHtml(course.applyLink)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="btn-apply-primary"
+                >
+                  <span>연수 수강신청 바로가기</span>
+                  <span>↗</span>
+                </a>
+
+                <div class="sidebar-utility-btns">
+                  <button type="button" class="btn-utility" onclick="copyCourseUrl()">
+                    <span>🔗</span> 링크 복사
+                  </button>
+                  <button type="button" class="btn-utility" onclick="window.print()">
+                    <span>🖨️</span> 안내문 인쇄
+                  </button>
+                </div>
+              </div>
+
+              <!-- Contact Info Box -->
+              <div class="contact-card">
+                <div class="contact-title">📞 연수 담당부서 및 문의처</div>
+                <div class="contact-value">
+                  ${
+                    phoneHref
+                      ? `<a href="${phoneHref}" style="color:inherit;text-decoration:none;">${escapeHtml(course.contact)}</a>`
+                      : escapeHtml(course.contact || course.dept)
+                  }
+                </div>
+                <div class="contact-sub">주관부서: ${escapeHtml(course.dept)} · 과정코드(${escapeHtml(course.code)})를 말씀해 주시면 빠른 안내가 가능합니다.</div>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Related Courses -->
+          <section class="related-section">
+            <div class="related-header">
+              <h2 class="related-title">함께 살펴보면 좋은 연관 직무연수</h2>
+              <a href="index.html" style="font-size:0.88rem;font-weight:700;color:var(--pnu-blue);text-decoration:none;">전체 목록 보기 →</a>
+            </div>
+            <div class="related-grid">
+              ${related
+                .map(
+                  (rc) => `
+                <a href="detail.html?code=${encodeURIComponent(rc.code)}" class="related-card">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                      <span class="badge ${getCardReqBadgeClass(rc.requirement)}">${escapeHtml(rc.requirement)}</span>
+                      <span class="mono" style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(rc.code)}</span>
+                    </div>
+                    <h3 class="related-card-title">${escapeHtml(rc.title)}</h3>
+                    <p class="related-card-summary">${escapeHtml(rc.summary)}</p>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;color:var(--text-secondary);padding-top:10px;border-top:1px solid var(--border-color);">
+                    <span>${escapeHtml(rc.category)} · ${escapeHtml(rc.method)}(${escapeHtml(rc.hours)})</span>
+                    <span style="color:var(--pnu-blue);font-weight:700;">상세보기 →</span>
+                  </div>
+                </a>
+              `
+                )
+                .join("")}
+            </div>
+          </section>
+        </main>
+      `;
+    }
+
+    function copyCourseUrl() {
+      const url = window.location.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showToast);
+      } else {
+        const temp = document.createElement("input");
+        temp.value = url;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        showToast();
+      }
+    }
+
+    function showToast() {
+      toastMsg.classList.add("show");
+      setTimeout(() => {
+        toastMsg.classList.remove("show");
+      }, 2400);
+    }
+
+    courseQuickSelect.addEventListener("change", (e) => {
+      if (e.target.value) {
+        window.location.href = `detail.html?code=${encodeURIComponent(e.target.value)}`;
+      }
+    });
+
+    btnRefreshData.addEventListener("click", loadDetailData);
+    document.addEventListener("DOMContentLoaded", loadDetailData);
+  </script>
+</body>
+</html>
