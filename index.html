@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2026 부산대학교 교직원 직무연수 통합 안내 | PNU HRD Catalog</title>
+  <!-- Pretendard & JetBrains Mono Fonts -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <!-- PapaParse for CSV Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    :root {
+      --pnu-navy: #003876;
+      --pnu-navy-dark: #002552;
+      --pnu-blue: #005BAC;
+      --pnu-blue-light: #EBF3FA;
+      --pnu-gold: #C59B27;
+      --bg-page: #F5F7FA;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #EEF2F6;
+      --text-primary: #0F172A;
+      --text-secondary: #334155;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --border-strong: #CBD5E1;
+
+      /* Semantic Badges */
+      --req-text: #DC2626;
+      --req-bg: #FEF2F2;
+      --req-border: #FECACA;
+
+      --req-cond-text: #D97706;
+      --req-cond-bg: #FFFBEB;
+      --req-cond-border: #FDE68A;
+
+      --rec-text: #005BAC;
+      --rec-bg: #EFF6FF;
+      --rec-border: #BFDBFE;
+
+      --opt-text: #475569;
+      --opt-bg: #F1F5F9;
+      --opt-border: #E2E8F0;
+
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+      --shadow-md: 0 10px 25px -5px rgba(0, 56, 118, 0.08), 0 4px 10px -3px rgba(15, 23, 42, 0.04);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      letter-spacing: -0.015em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono {
+      font-family: "JetBrains Mono", monospace;
+      letter-spacing: -0.02em;
+    }
+
+    /* Top Institutional Bar */
+    .top-utility-bar {
+      background-color: var(--pnu-navy-dark);
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.8125rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .top-utility-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 8px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .inst-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .inst-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #38BDF8;
+      box-shadow: 0 0 8px #38BDF8;
+    }
+
+    .sync-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sync-status {
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.78rem;
+    }
+
+    .btn-sync {
+      background: rgba(255, 255, 255, 0.12);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+
+    .btn-sync:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    /* Hero Section */
+    .hero-header {
+      background: linear-gradient(135deg, var(--pnu-navy) 0%, #004999 65%, var(--pnu-blue) 100%);
+      color: #FFFFFF;
+      position: relative;
+      overflow: hidden;
+      padding: 48px 24px 56px;
+      border-bottom: 4px solid var(--pnu-gold);
+    }
+
+    .hero-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-title {
+      font-size: clamp(1.85rem, 3.5vw, 2.65rem);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      margin-bottom: 14px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+      color: rgba(255, 255, 255, 0.88);
+      max-width: 780px;
+      font-weight: 400;
+      line-height: 1.65;
+    }
+
+    /* KPI Summary Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.11);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      color: #FFFFFF;
+      font-family: inherit;
+    }
+
+    .kpi-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .kpi-label {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .kpi-unit {
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-left: 4px;
+      opacity: 0.85;
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 6px;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 28px;
+    }
+
+    /* Top Row: Search + Quick Requirement Segment */
+    .filter-top-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr;
+      gap: 20px;
+      align-items: end;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .filter-group-label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .search-box-wrap {
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 38px 11px 40px;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      border: 1.5px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background-color: #FFFFFF;
+      color: var(--text-primary);
+      transition: all 0.18s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--pnu-blue);
+      box-shadow: 0 0 0 3px rgba(0, 91, 172, 0.14);
+    }
+
+    .btn-clear-search {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-subtle);
+      border: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Segmented Tabs for 이수구분 (Prominent Filter #1) */
+    .req-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .req-tab {
+      flex: 1;
+      min-width: 95px;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border-color);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+
+    .req-tab:hover {
+      border-color: var(--pnu-blue);
+      color: var(--pnu-blue);
+      background: #FFFFFF;
+    }
+
+    .req-tab.active {
+      background: var(--pnu-navy);
+      color: #FFFFFF;
+      border-color: var(--pnu-navy);
+      box-shadow: 0 2px 6px rgba(0, 56, 118, 0.22);
+    }
+
+    .req-tab-count {
+      font-size: 0.75rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      color: inherit;
+    }
+
+    .req-tab.active .req-tab-count {
+      background: rgba(255, 255, 255, 0.22);
+      color: #FFFFFF;
+    }
+
+    /* Middle Row: Category Chips (Prominent Filter #2) */
+    .category-section {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .category-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cat-chip {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: #FFFFFF;
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+
+    .cat-chip:hover {
+      border-color: var(--pnu-blue);
+      color: var(--pnu-blue);
+      background: var(--pnu-blue-light);
+    }
+
+    .cat-chip.active {
+      background: var(--pnu-blue);
+      color: #FFFFFF;
+      border-color: var(--pnu-blue);
+    }
+
+    .cat-chip-count {
+      font-size: 0.72rem;
+      opacity: 0.75;
+    }
+
+    /* Bottom Row: Secondary Filters & Sort */
+    .filter-bottom-row {
+      padding-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .select-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .select-label {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .filter-select {
+      padding: 8px 30px 8px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-family: inherit;
+      font-weight: 500;
+      color: var(--text-primary);
+      background-color: #FFFFFF;
+      cursor: pointer;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--pnu-blue);
+    }
+
+    .btn-reset {
+      padding: 8px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--bg-page);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .btn-reset:hover {
+      background: #E2E8F0;
+      color: var(--text-primary);
+    }
+
+    /* Results Toolbar */
+    .results-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .results-count {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .results-count strong {
+      color: var(--pnu-blue);
+      font-size: 1.05rem;
+    }
+
+    .active-filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .active-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--pnu-blue-light);
+      color: var(--pnu-navy);
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid #BFDBFE;
+    }
+
+    .active-tag button {
+      background: none;
+      border: none;
+      color: var(--pnu-navy);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.85rem;
+      line-height: 1;
+    }
+
+    /* Course Grid */
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .course-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .course-card::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--pnu-navy);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .course-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--pnu-blue);
+      box-shadow: var(--shadow-md);
+    }
+
+    .course-card:hover::after {
+      opacity: 1;
+    }
+
+    .card-top-badges {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .badge-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .badge-req {
+      background: var(--req-bg);
+      color: var(--req-text);
+      border: 1px solid var(--req-border);
+    }
+
+    .badge-req-cond {
+      background: var(--req-cond-bg);
+      color: var(--req-cond-text);
+      border: 1px solid var(--req-cond-border);
+    }
+
+    .badge-rec {
+      background: var(--rec-bg);
+      color: var(--rec-text);
+      border: 1px solid var(--rec-border);
+    }
+
+    .badge-opt {
+      background: var(--opt-bg);
+      color: var(--opt-text);
+      border: 1px solid var(--opt-border);
+    }
+
+    .badge-category {
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .course-code {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .card-title {
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.38;
+      margin-bottom: 10px;
+      transition: color 0.15s ease;
+    }
+
+    .course-card:hover .card-title {
+      color: var(--pnu-blue);
+    }
+
+    .card-summary {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-bottom: 20px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.8em;
+    }
+
+    .card-meta-box {
+      background: var(--bg-page);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      font-size: 0.8125rem;
+      margin-bottom: 16px;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .meta-item.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .meta-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .meta-val {
+      color: var(--text-primary);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.8125rem;
+    }
+
+    .dept-tag {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .card-cta {
+      color: var(--pnu-blue);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Skeleton Loader */
+    .skeleton-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      height: 310px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Empty & Error States */
+    .state-box {
+      grid-column: 1 / -1;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 64px 24px;
+      text-align: center;
+    }
+
+    .state-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .state-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .state-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: #0F172A;
+      color: rgba(255, 255, 255, 0.7);
+      padding: 40px 24px;
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-brand strong {
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+      .course-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .filter-top-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .course-grid {
+        grid-template-columns: 1fr;
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .hero-header {
+        padding: 32px 16px 40px;
+      }
+      .main-container {
+        padding: 20px 16px 60px;
+      }
+      .filter-panel {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Utility Bar -->
+  <div class="top-utility-bar">
+    <div class="top-utility-inner">
+      <div class="inst-tag">
+        <span class="inst-dot"></span>
+        <span>PUSAN NATIONAL UNIVERSITY · 2026 교직원 직무연수 통합 플랫폼</span>
+      </div>
+      <div class="sync-controls">
+        <span id="syncStatusText" class="sync-status mono">구글 시트 실시간 연동 대기 중...</span>
+        <button type="button" id="btnRefreshData" class="btn-sync" title="구글 시트에서 최신 데이터를 즉시 다시 불러옵니다">
+          <span>↻</span> 실시간 시트 새로고침
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <header class="hero-header">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span>📘 PNU HRD CATALOG 2026</span>
+      </div>
+      <h1 class="hero-title">2026 부산대학교 직무연수 안내</h1>
+      <p class="hero-subtitle">
+        부산대학교 구성원의 직무 전문성 강화와 성장을 지원하는 2026년도 연간 직무연수 카탈로그입니다.<br />
+        법정의무교육부터 AI·데이터, 대학행정 특화 과정까지 분야·대상·이수구분별로 나에게 필요한 연수를 탐색하고 신청하세요.
+      </p>
+
+      <!-- KPI Summary Cards (Click to quick-filter) -->
+      <div class="kpi-grid">
+        <button type="button" class="kpi-card" id="kpiTotalCard">
+          <div class="kpi-label">
+            <span>전체 개설 과정</span>
+            <span>전체보기 →</span>
+          </div>
+          <div class="kpi-value mono"><span id="kpiTotalCount">-</span><span class="kpi-unit">개 과정</span></div>
+          <div class="kpi-sub">2026년도 연간 직무연수 전체</div>
+        </button>
+
+        <button type="button" class="kpi-card" id="kpiMandatoryCard">
+          <div class="kpi-label">
+            <span>필수 이수 과정</span>
+            <span>필터 적용 →</span>
+          </div>
+          <div class="kpi-value mono"><span id="kpiMandatoryCount">-</span><span class="kpi-unit">개 과정</span></div>
+          <div class="kpi-sub">필수 및 필수(해당자) 지정 연수</div>
+        </button>
+
+        <button type="button" class="kpi-card" id="kpiOnlineCard">
+          <div class="kpi-label">
+            <span>온라인 상시 과정</span>
+            <span>필터 적용 →</span>
+          </div>
+          <div class="kpi-value mono"><span id="kpiOnlineCount">-</span><span class="kpi-unit">개 과정</span></div>
+          <div class="kpi-sub">시공간 제약 없는 상시 학습</div>
+        </button>
+
+        <button type="button" class="kpi-card" id="kpiCategoryCard">
+          <div class="kpi-label">
+            <span>전문 연수 분야</span>
+            <span>주관부서 <span id="kpiDeptCount">-</span>곳</span>
+          </div>
+          <div class="kpi-value mono"><span id="kpiCategoryCount">-</span><span class="kpi-unit">개 분야</span></div>
+          <div class="kpi-sub">법정의무·행정·AI·리더십·안전 등</div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    <!-- Smart Search & Multi-Filter Control Panel -->
+    <section class="filter-panel" aria-label="연수 검색 및 필터">
+      <div class="filter-top-row">
+        <!-- Keyword Search -->
+        <div>
+          <label for="searchInput" class="filter-group-label">통합 키워드 검색</label>
+          <div class="search-box-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              type="search"
+              id="searchInput"
+              class="search-input"
+              placeholder="과정명, 과정코드(PNU-2026), 주요내용, 담당부서 검색..."
+              autocomplete="off"
+            />
+            <button type="button" id="btnClearSearch" class="btn-clear-search" title="검색어 지우기">×</button>
+          </div>
+        </div>
+
+        <!-- Requirement Filter (이수구분) -->
+        <div>
+          <span class="filter-group-label">이수구분 (핵심 필터)</span>
+          <div class="req-tabs" id="reqTabsContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Chips (분야) -->
+      <div class="category-section">
+        <span class="filter-group-label">연수 분야별 탐색</span>
+        <div class="category-chips" id="categoryChipsContainer">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Secondary Filters (대상, 교육방식, 담당부서, 정렬) -->
+      <div class="filter-bottom-row">
+        <div class="select-filters">
+          <div class="select-wrap">
+            <label for="targetSelect" class="select-label">교육대상</label>
+            <select id="targetSelect" class="filter-select">
+              <option value="ALL">전체 대상</option>
+            </select>
+          </div>
+
+          <div class="select-wrap">
+            <label for="methodSelect" class="select-label">교육방식</label>
+            <select id="methodSelect" class="filter-select">
+              <option value="ALL">전체 방식</option>
+            </select>
+          </div>
+
+          <div class="select-wrap">
+            <label for="deptSelect" class="select-label">담당부서</label>
+            <select id="deptSelect" class="filter-select">
+              <option value="ALL">전체 부서</option>
+            </select>
+          </div>
+
+          <div class="select-wrap">
+            <label for="sortSelect" class="select-label">정렬</label>
+            <select id="sortSelect" class="filter-select">
+              <option value="code">과정코드 순 (기본)</option>
+              <option value="req">필수 이수 우선 순</option>
+              <option value="title">과정명 가나다 순</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" id="btnResetFilters" class="btn-reset">
+          <span>↺</span> 조건 초기화
+        </button>
+      </div>
+    </section>
+
+    <!-- Results Count & Active Tags -->
+    <div class="results-toolbar">
+      <div class="results-count" id="resultsCountText">
+        연수 과정을 불러오는 중입니다...
+      </div>
+      <div class="active-filter-tags" id="activeFilterTags"></div>
+    </div>
+
+    <!-- Course Cards Grid -->
+    <section id="courseGrid" class="course-grid" aria-live="polite">
+      <!-- Skeleton placeholders while loading -->
+      <div class="skeleton-card"><div class="shimmer" style="height:24px;width:45%"></div><div class="shimmer" style="height:32px;width:85%"></div><div class="shimmer" style="height:60px;width:100%"></div><div class="shimmer" style="height:80px;width:100%"></div></div>
+      <div class="skeleton-card"><div class="shimmer" style="height:24px;width:45%"></div><div class="shimmer" style="height:32px;width:85%"></div><div class="shimmer" style="height:60px;width:100%"></div><div class="shimmer" style="height:80px;width:100%"></div></div>
+      <div class="skeleton-card"><div class="shimmer" style="height:24px;width:45%"></div><div class="shimmer" style="height:32px;width:85%"></div><div class="shimmer" style="height:60px;width:100%"></div><div class="shimmer" style="height:80px;width:100%"></div></div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <strong>부산대학교 총무과 · 인재개발원 (Pusan National University HRD)</strong>
+        <span>(46241) 부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 | 데이터 원본: Google Sheets 실시간 연동</span>
+      </div>
+      <div class="mono" style="font-size:0.78rem;opacity:0.75;">
+        PNU 2026 STAFF TRAINING CATALOG
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /**
+     * Google Sheets gviz CSV Endpoint
+     * - sheet=data: 시트 이름 지정
+     * - headers=1: 첫 번째 행만 컬럼 헤더로 정확히 인식하도록 강제
+     */
+    const SHEET_ID = "1StSwPAmtEg4EDuqQCTaKmV9N-A4bR8AS";
+    const GVIZ_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=data&headers=1`;
+
+    // State
+    let allCourses = [];
+    const filterState = {
+      keyword: "",
+      requirement: "ALL", // 이수구분
+      category: "ALL",    // 분야
+      target: "ALL",      // 대상
+      method: "ALL",      // 교육방식
+      dept: "ALL",        // 담당부서
+      sort: "code"
+    };
+
+    // DOM Elements
+    const syncStatusText = document.getElementById("syncStatusText");
+    const btnRefreshData = document.getElementById("btnRefreshData");
+    const searchInput = document.getElementById("searchInput");
+    const btnClearSearch = document.getElementById("btnClearSearch");
+    const reqTabsContainer = document.getElementById("reqTabsContainer");
+    const categoryChipsContainer = document.getElementById("categoryChipsContainer");
+    const targetSelect = document.getElementById("targetSelect");
+    const methodSelect = document.getElementById("methodSelect");
+    const deptSelect = document.getElementById("deptSelect");
+    const sortSelect = document.getElementById("sortSelect");
+    const btnResetFilters = document.getElementById("btnResetFilters");
+    const resultsCountText = document.getElementById("resultsCountText");
+    const activeFilterTags = document.getElementById("activeFilterTags");
+    const courseGrid = document.getElementById("courseGrid");
+
+    // Helper: Escape HTML
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Helper: Badge style for 이수구분
+    function getRequirementBadgeClass(req) {
+      if (req === "필수") return "badge-req";
+      if (req && req.includes("필수")) return "badge-req-cond";
+      if (req === "권장") return "badge-rec";
+      return "badge-opt";
+    }
+
+    // Helper: Method icon
+    function getMethodIcon(method) {
+      if (method === "온라인") return "💻";
+      if (method === "집합") return "🏛️";
+      if (method === "혼합") return "🔄";
+      return "📌";
+    }
+
+    // Normalize each row from PapaParse
+    function normalizeCourseRow(raw) {
+      const clean = {};
+      Object.keys(raw).forEach((k) => {
+        const trimmedKey = k.trim();
+        clean[trimmedKey] = typeof raw[k] === "string" ? raw[k].trim() : "";
+      });
+      return {
+        code: clean["과정코드"] || "",
+        title: clean["과정명"] || "",
+        category: clean["분야"] || "기타",
+        target: clean["대상"] || "",
+        requirement: clean["이수구분"] || "",
+        method: clean["교육방식"] || "",
+        hours: clean["교육시간"] || "-",
+        capacity: clean["정원"] || "-",
+        period: clean["교육기간"] || "일정 추후 안내",
+        applyPeriod: clean["신청기간"] || "-",
+        dept: clean["담당부서"] || "",
+        summary: clean["한줄소개"] || "",
+        description: clean["상세소개"] || "",
+        goals: clean["학습목표"] || "",
+        contents: clean["주요내용"] || "",
+        applyLink: clean["신청링크"] || "",
+        contact: clean["문의"] || ""
+      };
+    }
+
+    // Helper: Fetch CSV via gviz JSONP fallback when opened directly via file:// (Origin: null)
+    function fetchCsvViaGvizJsonp() {
+      return new Promise((resolve, reject) => {
+        const cbName = "__pnuGvizCb_" + Date.now();
+        const script = document.createElement("script");
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("구글 시트 응답 시간 초과"));
+        }, 10000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[cbName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[cbName] = function (resp) {
+          cleanup();
+          try {
+            if (!resp || !resp.table) throw new Error("시트 테이블 응답 형식 오류");
+            const cols = resp.table.cols.map((c) => c.label || "");
+            const rows = resp.table.rows.map((r) =>
+              (r.c || []).map((cell) => (cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : ""))
+            );
+            // Convert back to CSV string and parse with PapaParse as required
+            const csvString = Papa.unparse({ fields: cols, data: rows });
+            resolve(csvString);
+          } catch (e) {
+            reject(e);
+          }
+        };
+
+        script.onerror = () => {
+          cleanup();
+          reject(new Error("구글 시트 스크립트 로드 실패"));
+        };
+
+        script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:${cbName}&sheet=data&headers=1&_ts=${Date.now()}`;
+        document.head.appendChild(script);
+      });
+    }
+
+    // Load CSV Data from Google Sheets using fetch + PapaParse
+    async function loadCoursesFromSheet() {
+      syncStatusText.textContent = "구글 시트 데이터 동기화 중...";
+      btnRefreshData.disabled = true;
+
+      try {
+        let csvText = "";
+        const fetchUrl = `${GVIZ_CSV_URL}&_ts=${Date.now()}`;
+
+        try {
+          // 1차: 표준 gviz CSV fetch (http://localhost 및 GitHub Pages https:// 환경)
+          const response = await fetch(fetchUrl, { cache: "no-store" });
+          if (!response.ok) {
+            throw new Error(`HTTP 오류 (${response.status})`);
+          }
+          csvText = await response.text();
+        } catch (fetchErr) {
+          // 2차: 로컬 탐색기(file://)에서 열었을 때 Origin: null CORS 제한 우회 (실시간 gviz 연동 유지)
+          console.info("file:// 환경 감지: 실시간 gviz 폴백으로 CSV를 수신합니다.");
+          csvText = await fetchCsvViaGvizJsonp();
+        }
+
+        const parsed = Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true
+        });
+
+        const rows = (parsed.data || [])
+          .map(normalizeCourseRow)
+          .filter((item) => item.code && item.title);
+
+        if (rows.length === 0) {
+          throw new Error("유효한 직무연수 행을 찾지 못했습니다.");
+        }
+
+        allCourses = rows;
+
+        // Update Sync Timestamp
+        const now = new Date();
+        const timeStr = now.toTimeString().split(" ")[0];
+        syncStatusText.textContent = `● 실시간 시트 연동 완료 (${timeStr})`;
+
+        updateKpiSummary();
+        renderFilterControls();
+        renderCourses();
+      } catch (err) {
+        console.error("Google Sheets 로드 실패:", err);
+        syncStatusText.textContent = "⚠ 시트 연동 오류 발생";
+        courseGrid.innerHTML = `
+          <div class="state-box">
+            <div class="state-icon">⚠️</div>
+            <div class="state-title">구글 시트 데이터를 불러오지 못했습니다</div>
+            <div class="state-desc">${escapeHtml(err.message)}<br/>구글 시트 공개 설정 또는 네트워크 상태를 확인한 뒤 다시 시도해 주세요.</div>
+            <button type="button" class="btn-reset" onclick="loadCoursesFromSheet()">다시 시도</button>
+          </div>
+        `;
+      } finally {
+        btnRefreshData.disabled = false;
+      }
+    }
+
+    // Update Hero KPI Cards
+    function updateKpiSummary() {
+      const total = allCourses.length;
+      const mandatory = allCourses.filter((c) => c.requirement.includes("필수")).length;
+      const online = allCourses.filter((c) => c.method === "온라인").length;
+      const categories = new Set(allCourses.map((c) => c.category).filter(Boolean)).size;
+      const depts = new Set(allCourses.map((c) => c.dept).filter(Boolean)).size;
+
+      document.getElementById("kpiTotalCount").textContent = total;
+      document.getElementById("kpiMandatoryCount").textContent = mandatory;
+      document.getElementById("kpiOnlineCount").textContent = online;
+      document.getElementById("kpiCategoryCount").textContent = categories;
+      document.getElementById("kpiDeptCount").textContent = depts;
+    }
+
+    // Render Dynamic Filter Controls
+    function renderFilterControls() {
+      // 1. 이수구분 Tabs
+      const reqOrder = ["ALL", "필수", "필수(해당자)", "권장", "선택"];
+      const reqCounts = { ALL: allCourses.length };
+      allCourses.forEach((c) => {
+        reqCounts[c.requirement] = (reqCounts[c.requirement] || 0) + 1;
+      });
+
+      reqTabsContainer.innerHTML = reqOrder
+        .filter((r) => r === "ALL" || reqCounts[r] > 0)
+        .map((r) => {
+          const label = r === "ALL" ? "전체" : r;
+          const activeClass = filterState.requirement === r ? "active" : "";
+          return `
+            <button type="button" class="req-tab ${activeClass}" data-req="${escapeHtml(r)}">
+              <span>${escapeHtml(label)}</span>
+              <span class="req-tab-count mono">${reqCounts[r] || 0}</span>
+            </button>
+          `;
+        })
+        .join("");
+
+      reqTabsContainer.querySelectorAll(".req-tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          filterState.requirement = btn.getAttribute("data-req");
+          renderFilterControls();
+          renderCourses();
+        });
+      });
+
+      // 2. 분야 Category Chips
+      const catCounts = {};
+      allCourses.forEach((c) => {
+        catCounts[c.category] = (catCounts[c.category] || 0) + 1;
+      });
+      const categories = ["ALL", ...Object.keys(catCounts)];
+
+      categoryChipsContainer.innerHTML = categories
+        .map((cat) => {
+          const label = cat === "ALL" ? "전체 분야" : cat;
+          const count = cat === "ALL" ? allCourses.length : catCounts[cat];
+          const activeClass = filterState.category === cat ? "active" : "";
+          return `
+            <button type="button" class="cat-chip ${activeClass}" data-cat="${escapeHtml(cat)}">
+              <span>${escapeHtml(label)}</span>
+              <span class="cat-chip-count mono">${count}</span>
+            </button>
+          `;
+        })
+        .join("");
+
+      categoryChipsContainer.querySelectorAll(".cat-chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          filterState.category = btn.getAttribute("data-cat");
+          renderFilterControls();
+          renderCourses();
+        });
+      });
+
+      // 3. Dropdown Selects (대상, 교육방식, 담당부서)
+      populateSelect(targetSelect, "전체 대상", ["전 직원", "신규자", "실무자", "관리자"], filterState.target);
+      populateSelect(methodSelect, "전체 방식", ["온라인", "집합", "혼합"], filterState.method);
+
+      const depts = Array.from(new Set(allCourses.map((c) => c.dept).filter(Boolean))).sort();
+      populateSelect(deptSelect, "전체 부서", depts, filterState.dept);
+    }
+
+    function populateSelect(selectEl, allLabel, options, selectedVal) {
+      const existingValues = new Set(allCourses.map((c) => {
+        if (selectEl === targetSelect) return c.target;
+        if (selectEl === methodSelect) return c.method;
+        return c.dept;
+      }));
+
+      const validOptions = options.filter((opt) => existingValues.has(opt));
+      selectEl.innerHTML = [
+        `<option value="ALL">${escapeHtml(allLabel)}</option>`,
+        ...validOptions.map((opt) => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`)
+      ].join("");
+      selectEl.value = selectedVal;
+    }
+
+    // Filter & Sort Courses
+    function getFilteredCourses() {
+      const kw = filterState.keyword.toLowerCase().trim();
+
+      const filtered = allCourses.filter((c) => {
+        if (filterState.requirement !== "ALL" && c.requirement !== filterState.requirement) {
+          return false;
+        }
+        if (filterState.category !== "ALL" && c.category !== filterState.category) {
+          return false;
+        }
+        if (filterState.target !== "ALL" && c.target !== filterState.target) {
+          return false;
+        }
+        if (filterState.method !== "ALL" && c.method !== filterState.method) {
+          return false;
+        }
+        if (filterState.dept !== "ALL" && c.dept !== filterState.dept) {
+          return false;
+        }
+        if (kw) {
+          const haystack = [
+            c.code,
+            c.title,
+            c.category,
+            c.target,
+            c.requirement,
+            c.dept,
+            c.summary,
+            c.description,
+            c.contents
+          ]
+            .join(" ")
+            .toLowerCase();
+          if (!haystack.includes(kw)) return false;
+        }
+        return true;
+      });
+
+      // Sort
+      const reqPriority = { "필수": 1, "필수(해당자)": 2, "권장": 3, "선택": 4 };
+      filtered.sort((a, b) => {
+        if (filterState.sort === "title") {
+          return a.title.localeCompare(b.title, "ko");
+        }
+        if (filterState.sort === "req") {
+          const pa = reqPriority[a.requirement] || 99;
+          const pb = reqPriority[b.requirement] || 99;
+          if (pa !== pb) return pa - pb;
+        }
+        return a.code.localeCompare(b.code, "en");
+      });
+
+      return filtered;
+    }
+
+    // Render Active Filter Pills
+    function renderActiveTags() {
+      const tags = [];
+      if (filterState.requirement !== "ALL") {
+        tags.push({ key: "requirement", label: `이수구분: ${filterState.requirement}` });
+      }
+      if (filterState.category !== "ALL") {
+        tags.push({ key: "category", label: `분야: ${filterState.category}` });
+      }
+      if (filterState.target !== "ALL") {
+        tags.push({ key: "target", label: `대상: ${filterState.target}` });
+      }
+      if (filterState.method !== "ALL") {
+        tags.push({ key: "method", label: `방식: ${filterState.method}` });
+      }
+      if (filterState.dept !== "ALL") {
+        tags.push({ key: "dept", label: `부서: ${filterState.dept}` });
+      }
+      if (filterState.keyword.trim() !== "") {
+        tags.push({ key: "keyword", label: `검색어: "${filterState.keyword.trim()}"` });
+      }
+
+      activeFilterTags.innerHTML = tags
+        .map(
+          (t) => `
+          <span class="active-tag">
+            <span>${escapeHtml(t.label)}</span>
+            <button type="button" data-clear-key="${t.key}" title="필터 해제">×</button>
+          </span>
+        `
+        )
+        .join("");
+
+      activeFilterTags.querySelectorAll("button[data-clear-key]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.getAttribute("data-clear-key");
+          if (key === "keyword") {
+            filterState.keyword = "";
+            searchInput.value = "";
+            btnClearSearch.style.display = "none";
+          } else {
+            filterState[key] = "ALL";
+          }
+          renderFilterControls();
+          renderCourses();
+        });
+      });
+    }
+
+    // Render Course Cards
+    function renderCourses() {
+      const filtered = getFilteredCourses();
+
+      resultsCountText.innerHTML = `전체 <strong>${allCourses.length}</strong>개 과정 중 조건에 맞는 <strong>${filtered.length}</strong>개 과정 표시`;
+      renderActiveTags();
+
+      if (filtered.length === 0) {
+        courseGrid.innerHTML = `
+          <div class="state-box">
+            <div class="state-icon">🔎</div>
+            <div class="state-title">선택하신 조건에 해당하는 직무연수 과정이 없습니다</div>
+            <div class="state-desc">검색어나 필터 조건을 변경하거나 초기화하여 전체 과정을 확인해 보세요.</div>
+            <button type="button" class="btn-reset" onclick="resetAllFilters()">전체 조건 초기화</button>
+          </div>
+        `;
+        return;
+      }
+
+      courseGrid.innerHTML = filtered
+        .map((c) => {
+          const reqBadgeClass = getRequirementBadgeClass(c.requirement);
+          const methodIcon = getMethodIcon(c.method);
+          const detailUrl = `detail.html?code=${encodeURIComponent(c.code)}`;
+
+          return `
+            <a href="${detailUrl}" class="course-card" aria-label="${escapeHtml(c.title)} 상세 페이지로 이동">
+              <div>
+                <div class="card-top-badges">
+                  <div class="badge-group">
+                    <span class="badge ${reqBadgeClass}">${escapeHtml(c.requirement)}</span>
+                    <span class="badge badge-category">${escapeHtml(c.category)}</span>
+                  </div>
+                  <span class="course-code mono">${escapeHtml(c.code)}</span>
+                </div>
+
+                <h2 class="card-title">${escapeHtml(c.title)}</h2>
+                <p class="card-summary">${escapeHtml(c.summary)}</p>
+              </div>
+
+              <div>
+                <div class="card-meta-box">
+                  <div class="meta-item">
+                    <span class="meta-label">대상</span>
+                    <span class="meta-val">${escapeHtml(c.target)}</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">방식</span>
+                    <span class="meta-val">${methodIcon} ${escapeHtml(c.method)} (${escapeHtml(c.hours)})</span>
+                  </div>
+                  <div class="meta-item full-width">
+                    <span class="meta-label">교육기간</span>
+                    <span class="meta-val mono" style="font-size:0.78rem;">${escapeHtml(c.period || "일정 추후 안내")}</span>
+                  </div>
+                </div>
+
+                <div class="card-footer">
+                  <span class="dept-tag">주관: ${escapeHtml(c.dept)} · 정원 ${escapeHtml(c.capacity)}</span>
+                  <span class="card-cta">상세보기 →</span>
+                </div>
+              </div>
+            </a>
+          `;
+        })
+        .join("");
+    }
+
+    function resetAllFilters() {
+      filterState.keyword = "";
+      filterState.requirement = "ALL";
+      filterState.category = "ALL";
+      filterState.target = "ALL";
+      filterState.method = "ALL";
+      filterState.dept = "ALL";
+      filterState.sort = "code";
+
+      searchInput.value = "";
+      btnClearSearch.style.display = "none";
+      sortSelect.value = "code";
+
+      renderFilterControls();
+      renderCourses();
+    }
+
+    // Event Listeners
+    searchInput.addEventListener("input", (e) => {
+      filterState.keyword = e.target.value;
+      btnClearSearch.style.display = filterState.keyword ? "inline-flex" : "none";
+      renderCourses();
+    });
+
+    btnClearSearch.addEventListener("click", () => {
+      filterState.keyword = "";
+      searchInput.value = "";
+      btnClearSearch.style.display = "none";
+      searchInput.focus();
+      renderCourses();
+    });
+
+    targetSelect.addEventListener("change", (e) => {
+      filterState.target = e.target.value;
+      renderCourses();
+    });
+
+    methodSelect.addEventListener("change", (e) => {
+      filterState.method = e.target.value;
+      renderCourses();
+    });
+
+    deptSelect.addEventListener("change", (e) => {
+      filterState.dept = e.target.value;
+      renderCourses();
+    });
+
+    sortSelect.addEventListener("change", (e) => {
+      filterState.sort = e.target.value;
+      renderCourses();
+    });
+
+    btnResetFilters.addEventListener("click", resetAllFilters);
+    btnRefreshData.addEventListener("click", loadCoursesFromSheet);
+
+    // Quick KPI Card Click Filters
+    document.getElementById("kpiTotalCard").addEventListener("click", resetAllFilters);
+    document.getElementById("kpiMandatoryCard").addEventListener("click", () => {
+      resetAllFilters();
+      filterState.requirement = "필수";
+      renderFilterControls();
+      renderCourses();
+    });
+    document.getElementById("kpiOnlineCard").addEventListener("click", () => {
+      resetAllFilters();
+      filterState.method = "온라인";
+      renderFilterControls();
+      renderCourses();
+    });
+    document.getElementById("kpiCategoryCard").addEventListener("click", () => {
+      document.querySelector(".category-section").scrollIntoView({ behavior: "smooth" });
+    });
+
+    // Initialize on DOMContentLoaded
+    document.addEventListener("DOMContentLoaded", loadCoursesFromSheet);
+  </script>
+</body>
+</html>
